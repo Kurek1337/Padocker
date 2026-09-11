@@ -25,6 +25,10 @@ if isinstance(data, list):
     grid_response = requests.get(grid_url, timeout=30)
     grid_data = grid_response.json()
 
+    results_url = f"https://api.openf1.org/v1/session_result?session_key={session_key}"
+    results_response = requests.get(results_url, timeout=30)
+    results_data = results_response.json()
+
 
     print("Grid status code:", grid_response.status_code)
 
@@ -40,6 +44,12 @@ if isinstance(data, list):
 
 
     drivers_df = pd.DataFrame(drivers_data)
+
+    results_df = pd.DataFrame(results_data)
+    results_df = results_df.rename(columns={"position": "finish_position"})
+    print("Results here")
+    print(results_df.head())
+    print(results_df.columns)
 
     print(sessions_df[["circuit_short_name", "date_start", "session_key"]])
 
