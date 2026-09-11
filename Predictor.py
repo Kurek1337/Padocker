@@ -42,11 +42,19 @@ if isinstance(data, list):
         print("No starting grid data available:")
         print(grid_data)
 
+    if isinstance(drivers_data, list):
+        drivers_df = pd.DataFrame(drivers_data)
+    else:
+        print("No drivers avaible")
 
-    drivers_df = pd.DataFrame(drivers_data)
+    if isinstance(results_data, list):
+        results_df = pd.DataFrame(results_data)
+        results_df = results_df.rename(columns={"position": "finish_position"})
+        print("working")
+    else:
+        print("No results available")
 
-    results_df = pd.DataFrame(results_data)
-    results_df = results_df.rename(columns={"position": "finish_position"})
+    #results_df = results_df.rename(columns={"position": "finish_position"})
     print("Results here")
     print(results_df.head())
     print(results_df.columns)
@@ -67,10 +75,48 @@ else:
     print(data)
 
 
+race_df = pd.merge(
+    drivers_df,
+    results_df,
+    on=["driver_number", "session_key", "meeting_key"]
+)
+
+race_df = race_df[
+    [
+        "meeting_key",
+        "session_key",
+        "driver_number",
+        "full_name",
+        "team_name",
+        "finish_position",
+        "number_of_laps",
+        "points",
+        "dnf",
+        "dns",
+        "dsq"
+    ]
+]
+
+race_df["finished_in_points"] = (race_df["points"] > 0).astype(int)
+print("merged here -----")
+print(race_df.head())
+print(race_df.columns)
+
+selected_session = sessions_df[
+    sessions_df["session_key"] == session_key
+].iloc[0]
+
+race_df["year"] = selected_session["year"]
+race_df["circuit_name"] = selected_session["circuit_short_name"]
+race_df["race_date"] = selected_session["date_start"]
 
 
 
+print("FINAL RACE DATA:")
+print(race_df.head())
+print(race_df.columns)
 
+race_df.to_csv("Bahrain-2023.csv", index=False)
 # PredictedPosition = 10 # Initial hard-coded value for tests 
 # After qualifying, predict whether a driver will finish in points (TOP 10)
 # driverFinishInPoints = 1 if PredictedPosition <= 10 else 0 # Binary Classification 
